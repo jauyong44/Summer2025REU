@@ -1,6 +1,6 @@
 import functools
 from collections import Counter
-import numpy as np # Ensure numpy is imported for the fix in Digits.py
+import numpy as np
 import torch
 import os
 
@@ -11,18 +11,12 @@ import os
 # mode - what kind of message is being written, determines the color (INFO, TRAIN, TEST, OOD)
 def log_msg(msg, mode="INFO"):
     color_map = {
-        "INFO": 36,  # Cyan
-        "TRAIN": 32, # Green
-        "TEST": 31,  # Red
-        "OOD": 33,   # Yellow
-        "GLOBAL_LOSS": 96, # Light Cyan (NEW ADDITION)
-        "LOCAL_ACC": 92,   # Light Green (NEW ADDITION)
+        "INFO": 36,
+        "TRAIN": 32,
+        "TEST": 31,
+        "OOD": 33,
     }
-    # Check if the mode exists in the color_map, otherwise print without color
-    if mode in color_map: # NEW: Added check for mode existence
-        msg = "\033[{}m[{}] {}\033[0m".format(color_map[mode], mode, msg)
-    else: # NEW: Fallback for unmapped modes
-        msg = "[{}] {}".format(mode, msg)
+    msg = "\033[{}m[{}] {}\033[0m".format(color_map[mode], mode, msg)
     return msg
 
 
@@ -90,8 +84,20 @@ def ini_client_domain(rand_domain_select, domains_list, parti_num):
     return selected_domain_list
 
 
+# Appears to be the same as above
+def log_msg(msg, mode="INFO"):
+    color_map = {
+        "INFO": 36,
+        "TRAIN": 32,
+        "TEST": 31,
+        "OOD": 33,
+    }
+    msg = "\033[{}m[{}] {}\033[0m".format(color_map[mode], mode, msg)
+    return msg
+
+
 # Calculates the client weight
-#
+# 
 # online_clients_list - list of online clients
 # client_domain_list - list of domains
 # freq - frequency
