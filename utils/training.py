@@ -364,6 +364,10 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
     if args.attack_type == 'backdoor' or (args.attack_type == 'Poisoning_Attack' and args.poisoning_evils == 'inverted_gradient' and args.backdoor_evils == 'atropos'):
         attack_success_rate = []
             
+    # Lists to store local accuracies and global loss
+    local_accuracies_per_epoch = []
+    global_losses_per_epoch = []
+
     # Creates a local variable for organization of the communication_epoch
     communication_epoch = cfg.DATASET.communication_epoch
     # For each epoch in the communication_epoch range
@@ -396,6 +400,19 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
         # If the arguments' attack_type is 'byzantine', calls a method that creates the attack net parameters
         if args.attack_type == 'byzantine':
             attack_net_para(args, cfg, fed_method)
+
+        # Calculate and print local accuracies after local updates
+        current_epoch_local_accuracies = []
+        # private_dataset.train_loaders is a list of data loaders, one for each client
+        for client_idx, client_train_loader in enumerate(private_dataset.train_loaders):
+            # Access the local model for the current client.
+            # Assuming fed_method.nets_list holds the local models.
+            local_net = fed_method.nets_list[client_idx]
+            local_eval_loader = client_train_loader
+            local_acc, _ = cal_top_one_five(net=local_net, test_dl=local_eval_loader, device=fed_method.device)
+            current_epoch_local_accuracies.append(local_acc)
+            print(log_msg(f"Epoch {epoch_index}: Client {client_idx} Local Accuracy: {local_acc:.2f}%", "LOCAL_ACC"))
+        local_accuracies_per_epoch.append(current_epoch_local_accuracies)
 
         # Server
         fed_method.sever_update(private_dataset.train_loaders)
@@ -452,6 +469,11 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
                 top1acc, _ = cal_top_one_five(fed_method.global_net, private_dataset.test_loader, fed_method.device)
                 mean_in_domain_acc_list.append(top1acc)
                 print(log_msg(f'The {epoch_index} Epoch: Acc:{top1acc}', "TEST"))
+            # Calculate and print global loss
+            # Assuming fed_method.global_net holds the current global model
+            global_loss = calculate_loss(fed_method.global_net, private_dataset.test_loader, fed_method.device)
+            global_losses_per_epoch.append(global_loss)
+            print(log_msg(f"Epoch {epoch_index}: Global Loss: {global_loss:.4f}", "GLOBAL_LOSS"))
 
         # If the 'contribution_match_degree_list' is in locals and the federated method aggregation_weight_list is not none. . .
             if 'contribution_match_degree_list' in locals() and fed_method.aggregation_weight_list is not None:
@@ -534,4 +556,19 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
         # If the arguments' attack_type is 'backdoor', it writes the attack_success_rate to the csv file
         if args.attack_type == 'backdoor' or (args.attack_type == 'Poisoning_Attack' and args.poisoning_evils == 'inverted_gradient' and args.backdoor_evils == 'atropos'):
             csv_writer.write_acc(attack_success_rate, name='attack_success_rate', mode='MEAN')
+
+        # Log local accuracies and global losses to CSV
+        if local_accuracies_per_epoch:
+            # Saving each client's accuracy as a separate column in the CSV
+            # This creates a dictionary where keys are 'client_0', 'client_1', etc.,
+            # and values are lists of accuracies for that client across all epochs.
+            # It handles cases where no local accuracies were collected.
+            if len(local_accuracies_per_epoch) > 0: # Ensure there's at least one epoch's data
+                # Transpose the list of lists: from [epoch][client] to [client][epoch]
+                transposed_local_accuracies = list(map(list, zip(*local_accuracies_per_epoch)))
+                local_acc_data_for_csv = {f'client_{i}': acc_list for i, acc_list in enumerate(transposed_local_accuracies)}
+                csv_writer.write_acc(local_acc_data_for_csv, name='local_accuracies', mode='ALL')
+
+        if global_losses_per_epoch:
+            csv_writer.write_acc({'global_loss': global_losses_per_epoch}, name='global_loss', mode='MEAN')
 
