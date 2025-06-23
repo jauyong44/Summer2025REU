@@ -411,7 +411,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
             local_eval_loader = client_train_loader
             local_acc, _ = cal_top_one_five(net=local_net, test_dl=local_eval_loader, device=fed_method.device)
             current_epoch_local_accuracies.append(local_acc)
-            print(log_msg(f"Epoch {epoch_index}: Client {client_idx} Local Accuracy: {local_acc:.2f}%", "LOCAL_ACC"))
+            print(log_msg(f"Epoch {epoch_index}: Client {client_idx} Local Accuracy: {local_acc:.2f}%", "INFO"))
         local_accuracies_per_epoch.append(current_epoch_local_accuracies)
 
         # Server
@@ -473,7 +473,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
             # Assuming fed_method.global_net holds the current global model
             global_loss = calculate_loss(fed_method.global_net, private_dataset.test_loader, fed_method.device)
             global_losses_per_epoch.append(global_loss)
-            print(log_msg(f"Epoch {epoch_index}: Global Loss: {global_loss:.4f}", "GLOBAL_LOSS"))
+            print(log_msg(f"Epoch {epoch_index}: Global Loss: {global_loss:.4f}", "INFO"))
 
         # If the 'contribution_match_degree_list' is in locals and the federated method aggregation_weight_list is not none. . .
             if 'contribution_match_degree_list' in locals() and fed_method.aggregation_weight_list is not None:
