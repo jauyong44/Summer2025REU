@@ -124,6 +124,23 @@ def cal_top_one_five(net, test_dl, device):
     top5acc = round(100 * top5 / total, 2)
     return top1acc, top5acc
 
+# This function is similar to cal_top_one_five but focuses on loss.
+# It will iterate through the data loader, calculate the loss for each batch,
+# and return the average loss.
+def calculate_loss(net, data_loader, device, criterion=torch.nn.CrossEntropyLoss()):
+    net.eval()
+    total_loss = 0.0
+    total_samples = 0
+    with torch.no_grad():
+        for inputs, labels in data_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            total_loss += loss.item() * inputs.size(0)
+            total_samples += inputs.size(0)
+    net.train()
+    return total_loss / total_samples if total_samples > 0 else 0.0
+    
 # Gets the in_domain_accs and the mean_in_domain_acc based on the federated method, test_loader dictionary, and a in_domain_list
 # list. Training the global net after getting each top1acc when it is calculated.
 #
