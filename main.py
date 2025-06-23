@@ -141,7 +141,6 @@ def main(args=None):
     cfg.merge_from_file(cfg_dataset_path)
 
     cfg_method_path = os.path.join(config_path(), args.dataset, args.method + '.yaml')
-    print(cfg_method_path)
     # Checks to see if the path exists, merging it from a file if it does
     if os.path.exists(cfg_method_path):
         cfg.merge_from_file(cfg_method_path)
