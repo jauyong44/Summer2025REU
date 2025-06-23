@@ -142,6 +142,8 @@ CFG.Sever.FLTrustSever.pub_aug = 'weak'
 CFG.Sever.FLTrustSever.public_batch_size = 64
 CFG.Sever.FLTrustSever.public_epoch = 20
 
+CFG.Sever.TrimmedMeanSever = CN() # Set TrimmedMean parameter
+CFG.Sever.TrimmedMeanSever.k_value = None #Sets the k value
 
 # cifar dataset_name: pub_cifar10
 CFG.Sever.DelphiflMedianSever = CN()

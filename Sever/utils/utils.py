@@ -17,7 +17,7 @@ def trimmed_mean(users_grads, users_count, corrupted_count):
         current_grads[i] = np.mean(good_vals) + med
     
     tock = process_time()
-    print('\ntrimmed mean time: ')
+    print('\nTrimmed Mean time: ')
     print(tock-tick)
     return current_grads
 
