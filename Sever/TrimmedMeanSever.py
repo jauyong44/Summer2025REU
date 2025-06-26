@@ -53,6 +53,8 @@ class TrimmedMeanSever(SeverMethod):
         # bad_client_num = int(self.args.bad_client_rate * len(self.online_clients))
         if self.k_value_override is not None:
             k = self.k_value_override
+            if (k>=len(online_clients_list)):
+                raise ValueError(f"Given a k value of {k} but we only have a online client size of {len(online_clients_list)}")
             print(log_msg(f"We are using the override and have a value of {k}"))
         else:
             f = len(online_clients_list) // 2  # worse case 50% malicious points

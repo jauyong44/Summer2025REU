@@ -14,6 +14,7 @@ def simplify_cfg(args, cfg):
     dump_cfg = CN()
     dump_cfg.DATASET = cfg.DATASET
     dump_cfg.OPTIMIZER = cfg.OPTIMIZER
+    dump_cfg.MODEL = cfg.MODEL
     dump_cfg[args.method] = cfg[args.method]
     dump_cfg[args.task] = cfg[args.task]
 
@@ -128,6 +129,13 @@ CFG.OPTIMIZER.local_train_batch = 64
 CFG.OPTIMIZER.local_test_batch = 64
 CFG.OPTIMIZER.val_batch = 64
 CFG.OPTIMIZER.local_train_lr = 1e-3
+
+'''Model Config'''
+CFG.MODEL = CN()
+CFG.MODEL.activation_type = "ReLU" 
+
+CFG.MODEL.CNN = CN()
+CFG.MODEL.CNN.init_weights = False
 
 '''Sever'''
 CFG.Sever = CN()
