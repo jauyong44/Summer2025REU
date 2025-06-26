@@ -90,7 +90,7 @@ class FedDCLocal(LocalMethod):
                 optimizer.zero_grad()
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(parameters=net.parameters(), max_norm=self.max_norm)
-                iterator.desc = "Local Pariticipant %d loss = %0.3f" % (index, loss)
+                iterator.desc = "Local Participant %d loss = %0.3f" % (index, loss)
                 optimizer.step()
 
         ####
