@@ -420,12 +420,25 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
 
         # Calculate and print local accuracies after local updates
         current_epoch_local_accuracies = []
-        # private_dataset.train_loaders is a list of data loaders, one for each client
-        for client_idx, client_train_loader in enumerate(private_dataset.train_loaders):
-            # Access the local model for the current client.
-            # Assuming fed_method.nets_list holds the local models.
-            local_net = fed_method.nets_list[client_idx]
-            local_eval_loader = client_train_loader
+        # Iterate through clients picked for current epoch
+        if hasattr(fed_method, 'online_clients_list') and fed_method.online_clients_list is not None:
+            selected_client_indices = fed_method.online_clients_list
+        else:
+            # else assume that all clients participated
+            selected_clients_indices = range(cfg.DATASET.parti_num)
+            print(log_msg("Warning: fed_method.online_clients_list not found. Assuming all clients participated.", "WARNING"))
+                                             
+        for client_idx_in_online_list in selected_client_indices:
+            # 'client_idx_in_online_list' is the actual global index of the client
+            local_net = fed_method.nets_list[client_idx_in_online_list]
+
+            # Use the client's local test data if available, otherwise use train data
+            # Ensure private_dataset.local_test_loaders is correctly indexed by the global client_idx
+            if hasattr(private_dataset, 'local_test_loaders') and private_dataset.local_test_loaders[client_idx_in_online_list] is not None:
+                local_eval_loader = private_dataset.local_test_loaders[client_idx_in_online_list]
+            else:
+                local_eval_loader = private_dataset.train_loaders[client_idx_in_online_list] # Use client's specific train loader
+
             local_acc, _ = cal_top_one_five(net=local_net, test_dl=local_eval_loader, device=fed_method.device)
             current_epoch_local_accuracies.append(local_acc)
             print(log_msg(f"Epoch {epoch_index}: Client {client_idx} Local Accuracy: {local_acc:.2f}%", "INFO"))
@@ -583,9 +596,11 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
             if len(local_accuracies_per_epoch) > 0: # Ensure there's at least one epoch's data
                 # Transpose the list of lists: from [epoch][client] to [client][epoch]
                 transposed_local_accuracies = list(map(list, zip(*local_accuracies_per_epoch)))
-                local_acc_data_for_csv = {f'client_{i}': acc_list for i, acc_list in enumerate(transposed_local_accuracies)}
+                local_acc_data_for_csv = {
+                    f'client_{selected_client_indices[i]}': acc_list
+                    for i, acc_list in enumerate(transposed_local_accuracies)
+                }
                 csv_writer.write_acc(local_acc_data_for_csv, name='local_accuracies', mode='ALL')
 
         if global_losses_per_epoch:
             csv_writer.write_acc({'global_loss': global_losses_per_epoch}, name='global_loss', mode='MEAN')
-
