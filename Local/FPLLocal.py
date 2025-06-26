@@ -99,7 +99,7 @@ class FPLLocal(LocalMethod):
 
                 loss = lossCE + loss_InfoNCE
                 loss.backward()
-                iterator.desc = "Local Pariticipant %d CE = %0.3f,InfoNCE = %0.3f" % (index, lossCE, loss_InfoNCE)
+                iterator.desc = "Local Participant %d CE = %0.3f,InfoNCE = %0.3f" % (index, lossCE, loss_InfoNCE)
                 optimizer.step()
 
                 if iter == self.cfg.OPTIMIZER.local_epoch - 1:

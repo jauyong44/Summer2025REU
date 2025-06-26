@@ -59,5 +59,5 @@ class MOONLocal(LocalMethod):
                 loss = lossCE + lossCON
                 optimizer.zero_grad()
                 loss.backward()
-                iterator.desc = "Local Pariticipant %d CE = %0.3f,CON = %0.3f" % (index, lossCE, lossCON)
+                iterator.desc = "Local Participant %d CE = %0.3f,CON = %0.3f" % (index, lossCE, lossCON)
                 optimizer.step()

@@ -59,5 +59,5 @@ class FcclPlusLocal(LocalMethod):
                 loss = loss_hard + inter_loss
                 optimizer.zero_grad()
                 loss.backward()
-                iterator.desc = "Local Pariticipant %d lossCE = %0.3f lossKD = %0.3f" % (index, loss_hard.item(), inter_loss.item())
+                iterator.desc = "Local Participant %d lossCE = %0.3f lossKD = %0.3f" % (index, loss_hard.item(), inter_loss.item())
                 optimizer.step()

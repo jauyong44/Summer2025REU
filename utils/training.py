@@ -124,6 +124,23 @@ def cal_top_one_five(net, test_dl, device):
     top5acc = round(100 * top5 / total, 2)
     return top1acc, top5acc
 
+# This function is similar to cal_top_one_five but focuses on loss.
+# It will iterate through the data loader, calculate the loss for each batch,
+# and return the average loss.
+def calculate_loss(net, data_loader, device, criterion=torch.nn.CrossEntropyLoss()):
+    net.eval()
+    total_loss = 0.0
+    total_samples = 0
+    with torch.no_grad():
+        for inputs, labels in data_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            total_loss += loss.item() * inputs.size(0)
+            total_samples += inputs.size(0)
+    net.train()
+    return total_loss / total_samples if total_samples > 0 else 0.0
+
 # Gets the in_domain_accs and the mean_in_domain_acc based on the federated method, test_loader dictionary, and a in_domain_list
 # list. Training the global net after getting each top1acc when it is calculated.
 #
@@ -364,6 +381,10 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
     if args.attack_type == 'backdoor' or (args.attack_type == 'Poisoning_Attack' and args.poisoning_evils == 'inverted_gradient' and args.backdoor_evils == 'atropos'):
         attack_success_rate = []
             
+    # Lists to store local accuracies and global loss
+    local_accuracies_per_epoch = []
+    global_losses_per_epoch = []
+
     # Creates a local variable for organization of the communication_epoch
     communication_epoch = cfg.DATASET.communication_epoch
     # For each epoch in the communication_epoch range
@@ -396,6 +417,32 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
         # If the arguments' attack_type is 'byzantine', calls a method that creates the attack net parameters
         if args.attack_type == 'byzantine':
             attack_net_para(args, cfg, fed_method)
+
+        # Calculate and print local accuracies after local updates
+        current_epoch_local_accuracies = []
+        # Iterate through clients picked for current epoch
+        if hasattr(fed_method, 'online_clients_list') and fed_method.online_clients_list is not None:
+            selected_client_indices = fed_method.online_clients_list
+        else:
+            # else assume that all clients participated
+            selected_clients_indices = range(cfg.DATASET.parti_num)
+            print(log_msg("Warning: fed_method.online_clients_list not found. Assuming all clients participated.", "WARNING"))
+                                             
+        for client_idx_in_online_list in selected_client_indices:
+            # 'client_idx_in_online_list' is the actual global index of the client
+            local_net = fed_method.nets_list[client_idx_in_online_list]
+
+            # Use the client's local test data if available, otherwise use train data
+            # Ensure private_dataset.local_test_loaders is correctly indexed by the global client_idx
+            if hasattr(private_dataset, 'local_test_loaders') and private_dataset.local_test_loaders[client_idx_in_online_list] is not None:
+                local_eval_loader = private_dataset.local_test_loaders[client_idx_in_online_list]
+            else:
+                local_eval_loader = private_dataset.train_loaders[client_idx_in_online_list] # Use client's specific train loader
+
+            local_acc, _ = cal_top_one_five(net=local_net, test_dl=local_eval_loader, device=fed_method.device)
+            current_epoch_local_accuracies.append(local_acc)
+            print(f"Client {client_idx_in_online_list} Local Accuracy: {local_acc:.2f}%")
+        local_accuracies_per_epoch.append(current_epoch_local_accuracies)
 
         # Server
         fed_method.sever_update(private_dataset.train_loaders)
@@ -452,6 +499,11 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
                 top1acc, _ = cal_top_one_five(fed_method.global_net, private_dataset.test_loader, fed_method.device)
                 mean_in_domain_acc_list.append(top1acc)
                 print(log_msg(f'The {epoch_index} Epoch: Acc:{top1acc}', "TEST"))
+            # Calculate and print global loss
+            # Assuming fed_method.global_net holds the current global model
+            global_loss = calculate_loss(fed_method.global_net, private_dataset.test_loader, fed_method.device)
+            global_losses_per_epoch.append(global_loss)
+            print(log_msg(f"Global Loss: {global_loss:.4f}", "TEST"))
 
         # If the 'contribution_match_degree_list' is in locals and the federated method aggregation_weight_list is not none. . .
             if 'contribution_match_degree_list' in locals() and fed_method.aggregation_weight_list is not None:
@@ -535,3 +587,20 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
         if args.attack_type == 'backdoor' or (args.attack_type == 'Poisoning_Attack' and args.poisoning_evils == 'inverted_gradient' and args.backdoor_evils == 'atropos'):
             csv_writer.write_acc(attack_success_rate, name='attack_success_rate', mode='MEAN')
 
+        # Log local accuracies and global losses to CSV
+        if local_accuracies_per_epoch:
+            # Saving each client's accuracy as a separate column in the CSV
+            # This creates a dictionary where keys are 'client_0', 'client_1', etc.,
+            # and values are lists of accuracies for that client across all epochs.
+            # It handles cases where no local accuracies were collected.
+            if len(local_accuracies_per_epoch) > 0: # Ensure there's at least one epoch's data
+                # Transpose the list of lists: from [epoch][client] to [client][epoch]
+                transposed_local_accuracies = list(map(list, zip(*local_accuracies_per_epoch)))
+                local_acc_data_for_csv = {
+                    f'client_{selected_client_indices[i]}': acc_list
+                    for i, acc_list in enumerate(transposed_local_accuracies)
+                }
+                csv_writer.write_acc(local_acc_data_for_csv, name='local_accuracies', mode='ALL')
+
+        if global_losses_per_epoch:
+            csv_writer.write_acc({'global_loss': global_losses_per_epoch}, name='global_loss', mode='MEAN')

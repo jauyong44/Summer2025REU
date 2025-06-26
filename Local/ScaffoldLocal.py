@@ -89,7 +89,7 @@ class ScaffoldLocal(LocalMethod):
                     net.parameters(), self.max_grad_norm
                 )
 
-                iterator.desc = "Local Pariticipant %d loss = %0.3f" % (index, loss)
+                iterator.desc = "Local Participant %d loss = %0.3f" % (index, loss)
                 optimizer.step(server_control=global_control, client_control=local_controls[index])
                 self.cnt += 1
 
