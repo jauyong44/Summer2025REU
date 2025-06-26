@@ -2,26 +2,30 @@ import torch # https://pytorch.org/docs/stable/torch.html
 import torch.nn as nn # https://pytorch.org/docs/stable/nn.html
 import torch.nn.functional as F # https://pytorch.org/docs/stable/nn.functional.html
 from torch import distributions # https://pytorch.org/docs/stable/distributions.html
-
+from utils.utils import log_msg
+from Backbones.utils import ACTIVATION_FUNCTIONS
 
 class SimpleCNN_header(nn.Module):
-    def __init__(self, input_dim, hidden_dims, output_dim=10):
+    def __init__(self, input_dim, hidden_dims, cfg, output_dim=10):
         super(SimpleCNN_header, self).__init__()
         self.conv1 = nn.Conv2d(3, 6, 5)
-        self.relu = nn.ReLU()
+        # self.relu = nn.ReLU()
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
+        act_type = cfg.MODEL.activation_type
+        self.activation = ACTIVATION_FUNCTIONS[act_type]()
+        
 
         self.fc1 = nn.Linear(input_dim, hidden_dims[0])
         self.fc2 = nn.Linear(hidden_dims[0], hidden_dims[1])
 
     def forward(self, x):
-        x = self.pool(self.relu(self.conv1(x)))
-        x = self.pool(self.relu(self.conv2(x)))
+        x = self.pool(self.activation(self.conv1(x)))
+        x = self.pool(self.activation(self.conv2(x)))
         x = x.view(-1, 16 * 5 * 5)
 
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
+        x = self.activation(self.fc1(x))
+        x = self.activation(self.fc2(x))
         return x
 
 
@@ -30,7 +34,8 @@ class SimpleCNN(nn.Module):
     def __init__(self, cfg):
         super(SimpleCNN, self).__init__()
         self.name = 'SimpleCNN'
-        self.feats = SimpleCNN_header(input_dim=(16 * 5 * 5), hidden_dims=[120, 84], output_dim=cfg.DATASET.n_classes)
+        self.act_type = cfg.MODEL.activation_type
+        self.feats = SimpleCNN_header(input_dim=(16 * 5 * 5), hidden_dims=[120, 84], cfg=cfg, output_dim=cfg.DATASET.n_classes)
         num_ftrs = 84
 
         self.l1 = nn.Linear(num_ftrs, num_ftrs)
@@ -38,6 +43,27 @@ class SimpleCNN(nn.Module):
 
         # last layer
         self.cls = nn.Linear(256, cfg.DATASET.n_classes)
+
+        self.activation = ACTIVATION_FUNCTIONS[self.act_type]()
+        if cfg.MODEL.CNN.init_weights:
+            self.apply(self._init_weights)
+
+    def _init_weights(self,m):
+        nonlinearity_arg = self.act_type.lower()
+        if isinstance(m, nn.Conv2d):
+            if self.act_type in ['ReLU', 'Leaky_ReLU']:
+                nn.init.kaiming_normal_(m.weight, nonlinearity=nonlinearity_arg)
+            else:
+                nn.init.xavier_normal_(m.weight, gain=nn.init.calculate_gain(nonlinearity_arg))
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.Linear):
+            if self.act_type in ['ReLU', 'Leaky_ReLU']:
+                nn.init.kaiming_normal_(m.weight, nonlinearity=nonlinearity_arg)
+            else:
+                nn.init.xavier_normal_(m.weight, gain=nn.init.calculate_gain(nonlinearity_arg))
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
 
     def _get_basemodel(self, model_name):
         try:
@@ -50,7 +76,7 @@ class SimpleCNN(nn.Module):
         h = self.feats(x)
         h = h.squeeze()
         h = self.l1(h)
-        h = F.relu(h)
+        h = self.activation(h)
         h = self.l2(h)
         return h
 
@@ -75,7 +101,7 @@ class SimpleCNN_sr(nn.Module):
     def __init__(self, cfg):
         super(SimpleCNN_sr, self).__init__()
         self.name = 'SimpleCNN'
-        self.feats = SimpleCNN_header(input_dim=(16 * 5 * 5), hidden_dims=[120, 84], output_dim=cfg.DATASET.n_classes)
+        self.feats = SimpleCNN_header(input_dim=(16 * 5 * 5), hidden_dims=[120, 84], cfg=cfg, output_dim=cfg.DATASET.n_classes)
         num_ftrs = 84
 
         self.l1 = nn.Linear(num_ftrs, num_ftrs)
@@ -85,6 +111,28 @@ class SimpleCNN_sr(nn.Module):
 
         # last layer
         self.cls = nn.Linear(256, cfg.DATASET.n_classes)
+
+        self.act_type = cfg.MODEL.activation_type
+        self.activation = ACTIVATION_FUNCTIONS[act_type]()
+        if cfg.MODEL.CNN.init_weights:
+            self.apply(self._init_weights)
+
+    def _init_weights(self,m):
+        nonlinearity_arg = self.act_type.lower()
+        if isinstance(m, nn.Conv2d):
+            if self.act_type in ['ReLU', 'Leaky_ReLU']:
+                nn.init.kaiming_normal_(m.weight, nonlinearity=nonlinearity_arg)
+            else:
+                nn.init.xavier_normal_(m.weight, gain=nn.init.calculate_gain(nonlinearity_arg))
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.Linear):
+            if self.act_type in ['ReLU', 'Leaky_ReLU']:
+                nn.init.kaiming_normal_(m.weight,nonlinearity=nonlinearity_arg)
+            else:
+                nn.init.xavier_normal_(m.weight, gain=nn.init.calculate_gain(nonlinearity_arg))
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
 
     def _get_basemodel(self, model_name):
         try:
@@ -97,7 +145,7 @@ class SimpleCNN_sr(nn.Module):
         h = self.feats(x)
         h = h.squeeze()
         h = self.l1(h)
-        h = F.relu(h)
+        h = self.activation(h)
         h = self.l2(h)
         return h
 
