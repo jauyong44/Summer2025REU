@@ -441,7 +441,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
 
             local_acc, _ = cal_top_one_five(net=local_net, test_dl=local_eval_loader, device=fed_method.device)
             current_epoch_local_accuracies.append(local_acc)
-            print(log_msg(f"Client {client_idx_in_online_list} Local Accuracy: {local_acc:.2f}%", "TRAIN"))
+            print(f"Client {client_idx_in_online_list} Local Accuracy: {local_acc:.2f}%")
         local_accuracies_per_epoch.append(current_epoch_local_accuracies)
 
         # Server
