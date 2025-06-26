@@ -14,6 +14,7 @@ def simplify_cfg(args, cfg):
     dump_cfg = CN()
     dump_cfg.DATASET = cfg.DATASET
     dump_cfg.OPTIMIZER = cfg.OPTIMIZER
+    dump_cfg.MODEL = cfg.MODEL
     dump_cfg[args.method] = cfg[args.method]
     dump_cfg[args.task] = cfg[args.task]
 
@@ -129,6 +130,13 @@ CFG.OPTIMIZER.local_test_batch = 64
 CFG.OPTIMIZER.val_batch = 64
 CFG.OPTIMIZER.local_train_lr = 1e-3
 
+'''Model Config'''
+CFG.MODEL = CN()
+CFG.MODEL.activation_type = "ReLU" 
+
+CFG.MODEL.CNN = CN()
+CFG.MODEL.CNN.init_weights = False
+
 '''Sever'''
 CFG.Sever = CN()
 
@@ -142,6 +150,8 @@ CFG.Sever.FLTrustSever.pub_aug = 'weak'
 CFG.Sever.FLTrustSever.public_batch_size = 64
 CFG.Sever.FLTrustSever.public_epoch = 20
 
+CFG.Sever.TrimmedMeanSever = CN() # Set TrimmedMean parameter
+CFG.Sever.TrimmedMeanSever.k_value = None #Sets the k value
 
 # cifar dataset_name: pub_cifar10
 CFG.Sever.DelphiflMedianSever = CN()

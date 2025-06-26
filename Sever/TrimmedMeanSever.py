@@ -6,7 +6,7 @@ import torch
 from Backbones import get_private_backbones
 from Sever.utils.sever_methods import SeverMethod
 from Sever.utils.utils import trimmed_mean
-from utils.utils import row_into_parameters
+from utils.utils import row_into_parameters, log_msg 
 
 
 class TrimmedMeanSever(SeverMethod):
@@ -26,6 +26,7 @@ class TrimmedMeanSever(SeverMethod):
         self.current_weights = torch.cat(self.current_weights, dim=0).cpu().numpy()
         self.velocity = np.zeros(self.current_weights.shape, self.current_weights.dtype)
         self.n = 5
+        self.k_value_override = getattr(cfg.Sever[self.NAME], 'k_value', None)
 
     def sever_update(self, **kwargs):
 
@@ -50,8 +51,15 @@ class TrimmedMeanSever(SeverMethod):
             all_grads = np.array(all_grads)
 
         # bad_client_num = int(self.args.bad_client_rate * len(self.online_clients))
-        f = len(online_clients_list) // 2  # worse case 50% malicious points
-        k = len(online_clients_list) - f - 1
+        if self.k_value_override is not None:
+            k = self.k_value_override
+            if (k>=len(online_clients_list)):
+                raise ValueError(f"Given a k value of {k} but we only have a online client size of {len(online_clients_list)}")
+            print(log_msg(f"We are using the override and have a value of {k}"))
+        else:
+            f = len(online_clients_list) // 2  # worse case 50% malicious points
+            k = len(online_clients_list) - f - 1
+            print(log_msg(f"We are using default k calculated from F and have a value of {k}"))
 
         current_grads = trimmed_mean(all_grads, len(online_clients_list), k)
 
