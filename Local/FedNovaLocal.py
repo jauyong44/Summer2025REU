@@ -47,7 +47,7 @@ class FedNovaLocal(LocalMethod):
                     loss = criterion(outputs, labels)
                     optimizer.zero_grad()
                     loss.backward()
-                    iterator.desc = "Local Pariticipant %d loss = %0.3f" % (index, loss)
+                    iterator.desc = "Local Participant %d loss = %0.3f" % (index, loss)
                     optimizer.step()
                     tau += 1
 
