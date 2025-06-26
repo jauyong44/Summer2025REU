@@ -3,7 +3,7 @@ from collections import Counter
 import numpy as np
 import torch
 import os
-
+from yacs.config import CfgNode as CN
 
 # Sets format and colors for log messages
 #
@@ -52,7 +52,7 @@ def ini_client_domain(rand_domain_select, domains_list, parti_num):
 
     if rand_domain_select:
 
-        # Max of the participant number
+        # Max num of participants per domain
         max_num = 10
         is_ok = False
         while not is_ok:
