@@ -81,7 +81,7 @@ class FedProtoLocal(LocalMethod):
 
                 loss = lossCE + lossProto
                 loss.backward()
-                iterator.desc = "Local Pariticipant %d CE = %0.3f,Proto = %0.3f" % (index, lossCE, lossProto)
+                iterator.desc = "Local Participant %d CE = %0.3f,Proto = %0.3f" % (index, lossCE, lossProto)
                 optimizer.step()
 
                 if iter == self.cfg.OPTIMIZER.local_epoch - 1:
