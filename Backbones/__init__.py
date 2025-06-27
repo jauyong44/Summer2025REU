@@ -22,7 +22,7 @@ def get_private_backbones(cfg):
 
         if(cfg.MODEL.CNN.init_weights):
             print(log_msg(f"Initalizing CNN weights"))
-            print(log_msg(f"Using Kaiming weight intalization", "TRAIN")) if cfg.MODEL.activation_type in ['ReLU', 'Leaky_ReLU'] else print(log_msg(f"Using Xavier weight intalization", "TRAIN"))
+            print(log_msg(f"Using Kaiming weight initialization", "TRAIN")) if cfg.MODEL.activation_type in ['ReLU', 'Leaky_ReLU'] else print(log_msg(f"Using Xavier weight initialization", "TRAIN"))
         if cfg.MODEL.activation_type not in ACTIVATION_FUNCTIONS:
             raise ValueError(f"Unsupported activation function: {act_type}")
         print(log_msg(f"Act Type: {cfg.MODEL.activation_type} real type: {ACTIVATION_FUNCTIONS[cfg.MODEL.activation_type]}"))
