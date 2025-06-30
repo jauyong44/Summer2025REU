@@ -1,0 +1,7 @@
+# configs/ShanFL.yaml
+
+ShanFL:
+  initial_trust_score: 1.0 # Starting trust for new clients (0.0 - 1.0)
+  consistency_threshold: 0.85 # Cosine similarity above this is "consistent" (e.g., 0.85 to 0.95)
+  trust_increase_factor: 1.1    # Multiplier if consistent (e.g., 1.05 for 5% increase per round)
+  trust_decrease_factor: 0.9   # Multiplier if inconsistent (e.g., 0.95 for 5% decrease per round)
