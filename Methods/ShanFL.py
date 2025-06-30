@@ -111,7 +111,6 @@ class ShanFL(FederatedMethod):
         # Reset global model at round start for next epoch
         self.global_model_at_round_start = copy.deepcopy(self.global_net.state_dict())
 
-
     def _flatten_parameters(self, params_dict):
         """Flattens a dictionary of model parameters into a single tensor."""
         tensors = [v.flatten() for v in params_dict.values() if isinstance(v, torch.Tensor)]
