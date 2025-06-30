@@ -140,10 +140,16 @@ def main(args=None):
     cfg_dataset_path = os.path.join(config_path(), args.task, args.dataset, 'Default.yaml')
     cfg.merge_from_file(cfg_dataset_path)
 
-    cfg_method_path = os.path.join(config_path(), args.dataset, args.method + '.yaml')
-    # Checks to see if the path exists, merging it from a file if it does
-    if os.path.exists(cfg_method_path):
-        cfg.merge_from_file(cfg_method_path)
+    cfg_method_path_global = os.path.join(config_path(), args.method + '.yaml')
+    if os.path.exists(cfg_method_path_global):
+        cfg.merge_from_file(cfg_method_path_global)
+    else:
+        # Fallback to dataset-specific method config if the above isn't found
+        cfg_dataset_method_path = os.path.join(config_path(), args.dataset, args.method + '.yaml')
+        if os.path.exists(cfg_dataset_method_path):
+            cfg.merge_from_file(cfg_dataset_method_path)
+        else:
+            print(f"Warning: No specific config file found for method '{args.method}'. Checked {cfg_method_path_global} and {cfg_dataset_method_path}.")
 
     cfg.merge_from_list(args.opts)
 
