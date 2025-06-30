@@ -111,30 +111,28 @@ class ShanFL(FederatedMethod):
         # Reset global model at round start for next epoch
         self.global_model_at_round_start = copy.deepcopy(self.global_net.state_dict())
 
-    def _flatten_parameters(self, params_dict):
-        """Flattens a dictionary of model parameters into a single tensor."""
-        tensors = [v.flatten() for v in params_dict.values() if isinstance(v, torch.Tensor)]
-        if not tensors:
-            return torch.tensor([])
-        return torch.cat(tensors)
+  def _flatten_parameters(self, params_dict):
+      """Flattens a dictionary of model parameters into a single tensor."""
+      tensors = [v.flatten() for v in params_dict.values() if isinstance(v, torch.Tensor)]
+      if not tensors:
+          return torch.tensor([])
+      return torch.cat(tensors)
 
-    def _perform_simple_average_aggregation(self):
-        """Fallback aggregation method if trust scores are problematic or no online clients."""
-        if not self.online_clients_list:
-            return
+  def _perform_simple_average_aggregation(self):
+      """Fallback aggregation method if trust scores are problematic or no online clients."""
+      if not self.online_clients_list:
+          return
 
-        global_state = self.global_net.state_dict()
-        for k in global_state:
-            global_state[k] = torch.zeros_like(global_state[k])
+      global_state = self.global_net.state_dict()
+      for k in global_state:
+          global_state[k] = torch.zeros_like(global_state[k])
 
-        num_online_clients = len(self.online_clients_list)
-        if num_online_clients == 0: return
+      num_online_clients = len(self.online_clients_list)
+      if num_online_clients == 0: return
 
-        for client_id in self.online_clients_list:
-            client_net_para = self.nets_list[client_id].state_dict()
-            for k in global_state:
-                global_state[k] += client_net_para[k] / num_online_clients
+      for client_id in self.online_clients_list:
+          client_net_para = self.nets_list[client_id].state_dict()
+          for k in global_state:
+              global_state[k] += client_net_para[k] / num_online_clients
 
-        self.global_net.load_state_dict(global_state)
-  
-  
+      self.global_net.load_state_dict(global_state)
