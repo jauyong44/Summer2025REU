@@ -86,7 +86,7 @@ def parse_args():
                         help='Which type of Poisoning attack: inverted_gradient')
     
     '''
-    Federated Method: FedRC FedAVG FedR FedProx FedDyn FedOpt FedProc FedR FedProxRC  FedProxCos FedNTD  DelphiflMedian DelphiflZeroTrust DelphiflZeroTrustV2
+    Federated Method: FedRC FedAVG FedR FedProx FedDyn FedOpt FedProc FedR FedProxRC  FedProxCos FedNTD  DelphiflMedian DelphiflZeroTrust DelphiflZeroTrustV2 ShanFL
     '''
     # Adds flag for the type of method the federated learning model is using, with qffeAVG being the default
     parser.add_argument('--method', type=str, default='qffeAVG',
