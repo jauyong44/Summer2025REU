@@ -9,7 +9,7 @@ class ShanFL(FederatedMethod):
   COMPATIBILITY = ['homogeneity', 'heterogeneity']
 
   def __init__(self, nets_lit, client_domain_list, args, cfg):
-    super().__init__(nets_list, client_domain_list, args, cfg)
+    super(ShanFL, self).__init__(nets_list, client_domain_list, args, cfg)
     # initialize trust scores for all potential clients 
     self.trust_score = {i: cfg.FEDTRUST.initial_trust_score for i in range(self.parti_num)}
     # store the flattened model difference of the last participation for each client
