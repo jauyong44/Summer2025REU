@@ -8,7 +8,7 @@ class ShanFL(FederatedMethod):
   NAME = 'ShanFL'
   COMPATIBILITY = ['homogeneity', 'heterogeneity']
 
-  def __init__(self, nets_lit, client_domain_list, args, cfg):
+  def __init__(self, nets_list, client_domain_list, args, cfg):
     super(ShanFL, self).__init__(nets_list, client_domain_list, args, cfg)
     # initialize trust scores for all potential clients 
     self.trust_score = {i: cfg.FEDTRUST.initial_trust_score for i in range(self.parti_num)}
