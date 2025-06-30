@@ -1,8 +1,5 @@
 import copy
 
-from Aggregations import get_fed_aggregation
-from Sever import get_sever_method
-from Local import get_local_method
 from utils.conf import get_device
 import torch.nn as nn
 import numpy as np
@@ -31,6 +28,10 @@ class FederatedMethod(nn.Module):
 
         self.global_net = None
         self.device = get_device(device_id=self.args.device_id)
+
+        from Aggregations import get_fed_aggregation
+        from Sever import get_sever_method
+        from Local import get_local_method
 
         self.local_model = get_local_method(args, cfg)
         self.sever_model = get_sever_method(args, cfg)
