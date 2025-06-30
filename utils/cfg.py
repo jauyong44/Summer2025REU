@@ -462,3 +462,8 @@ CFG.FcclPlus.global_method = 'FcclPlusSever'
 CFG.RHFL = CN()
 CFG.RHFL.local_method = 'RHFLLocal'
 CFG.RHFL.global_method = 'RHFLSever'
+
+# ShanFL
+CFG.ShanFL = CN()
+CFG.ShanFL.local_method = 'BaseLocal'
+CFG.ShanFL.global_method = 'ShanFLSever'
