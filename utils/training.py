@@ -395,6 +395,26 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
 
         # Client
         fed_method.test_loader = private_dataset.test_loader
+
+        # Iterate through clients picked for current epoch
+        if hasattr(fed_method, 'online_clients_list') and fed_method.online_clients_list is not None:
+            pass
+        else:
+            # Default selection if the method doesn't specify online clients.
+            # Assuming `fed_method.online_num` is correctly set in FederatedMethod.__init__
+            if hasattr(fed_method, 'online_num'):
+                online_count = fed_method.online_num
+            else:
+                online_count = cfg.DATASET.parti_num # Fallback if online_num not set
+
+            # Randomly select `online_count` clients. If online_count is more than total, take all.
+            if online_count < cfg.DATASET.parti_num:
+                fed_method.online_clients_list = random.sample(range(cfg.DATASET.parti_num), online_count)
+            else:
+                fed_method.online_clients_list = list(range(cfg.DATASET.parti_num)) # All clients
+
+            log_msg(f"Warning: fed_method.online_clients_list was not explicitly set by the method. Selected {len(fed_method.online_clients_list)} clients for epoch {epoch_index}.", "WARNING")
+            
         # Locally updates
         if args.attack_type == "Poisoning_Attack":
             for client_index in range(cfg.DATASET.parti_num):
@@ -429,13 +449,6 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
 
         # Calculate and print local accuracies after local updates
         current_epoch_local_accuracies = []
-        # Iterate through clients picked for current epoch
-        if hasattr(fed_method, 'online_clients_list') and fed_method.online_clients_list is not None:
-            selected_client_indices = fed_method.online_clients_list
-        else:
-            # else assume that all clients participated
-            selected_clients_indices = range(cfg.DATASET.parti_num)
-            print(log_msg("Warning: fed_method.online_clients_list not found. Assuming all clients participated.", "WARNING"))
                                              
         for client_idx_in_online_list in selected_client_indices:
             # 'client_idx_in_online_list' is the actual global index of the client
