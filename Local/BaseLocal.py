@@ -14,7 +14,7 @@ class BaseLocal(LocalMethod):
         online_clients_list = kwargs['online_clients_list']
         nets_list = kwargs['nets_list']
         priloader_list = kwargs['priloader_list']
-        loss_data = kwargs.get('loss')
+        losses = kwargs.get('losses')
 
         for i in online_clients_list:
             self.train_net(i, nets_list[i], priloader_list[i])
