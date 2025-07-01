@@ -406,11 +406,11 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
                 else:
                     loss = -1
                     losses.append(loss)
-            fed_method.local_model.local_update(private_dataset.train_loaders, losses)
+            fed_method.local_model.loc_update(private_dataset.train_loaders, losses)
                 # row_into_parameters(loss, np.array(private_dataset.train_loaders[0]))
                 # train_loader.append(data_utils.DataLoader(loss, batch_size=len(private_dataset.train_loaders[0]), shuffle=True))
         else:
-            fed_method.local_model.local_update(private_dataset.train_loaders)
+            fed_method.local_model.loc_update(private_dataset.train_loaders)
 
         fed_method.nets_list_before_agg = copy.deepcopy(fed_method.nets_list)
 
