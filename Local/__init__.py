@@ -2,21 +2,30 @@ import importlib
 import inspect
 import os
 
-
-def get_all_models():
-    return [model.strip('.py') for model in os.listdir('Local')
-            if not model.find('_') > -1 and 'py' in model]
-
-
-local_names = {}
-for model in get_all_models():
-    mod = importlib.import_module('Local.' + model)
-    class_name = [x for x in mod.__dir__() if 'type' in str(type(getattr(mod, x))) and 'LocalMethod' in str(
-        inspect.getmro(getattr(mod, x))[1:])]
-    for d in class_name:
-        c = getattr(mod, d)
-        local_names[c.NAME] = c
-
-
 def get_local_method(args, cfg):
-    return local_names[cfg[args.method].local_method](args, cfg)
+    method_name = cfg[args.method].local_method
+    # dynamically import only the specific module requested
+    try:
+        mod = importlib.import_module('Local.' + method_name)
+    except ImportError as e:
+        raise ImportError(f"Could not import local method '{method_name}'.")
+    class_obj = None
+    for name in dir(mod):
+        obj = getattr(mod, name)
+        if inspect.isclass(obj) and issubclass(obj, object) and 'LocalMethod' in str(inspect.getmro(obj)): # Check for LocalMethod in MRO
+            # Ensure it's not the base LocalMethod itself if it's imported in the module
+            if obj.__name__ != 'LocalMethod': # If LocalMethod itself might be imported, avoid returning it
+                class_obj = obj
+                break
+
+    if class_obj is None:
+        # Fallback for finding class name by iterating through module's members
+        class_name = [x for x in mod.__dir__() if 'type' in str(type(getattr(mod, x))) and 'LocalMethod' in str(
+            inspect.getmro(getattr(mod, x))[1:])]
+        if class_name:
+            class_obj = getattr(mod, class_name[0])
+    
+    if class_obj is None:
+        raise RuntimeError(f"Could not find a valid LocalMethod class in module 'Local.{method_name}'")
+
+    return class_obj(args, cfg) # Instantiate and return
