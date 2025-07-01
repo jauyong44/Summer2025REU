@@ -90,3 +90,22 @@ class FederatedMethod(nn.Module):
         for net_id, net in enumerate(nets_list):
             net_para = net.state_dict()
             self.prev_nets_list[net_id].load_state_dict(net_para)
+
+class SeverMethod(object): # Inherits from object, not nn.Module unless it's a model itself
+    def __init__(self, global_model, cfg):
+        self.global_net = global_model
+        self.cfg = cfg
+        # Common attributes for server methods, initialized by concrete server classes
+        # e.g., self.nets_list = None, self.online_clients_list = None etc.
+
+    def sever_update(self, **kwargs):
+        raise NotImplementedError("Subclasses must implement sever_update method.")
+
+class LocalMethod(object): # Inherits from object, not nn.Module
+    def __init__(self, net, client_id, cfg):
+        self.net = net
+        self.client_id = client_id
+        self.cfg = cfg
+
+    def local_update(self, **kwargs):
+        raise NotImplementedError("Subclasses must implement local_update method.")
