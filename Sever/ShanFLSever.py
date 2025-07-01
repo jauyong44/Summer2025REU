@@ -1,3 +1,7 @@
+import copy
+import torch
+import torch.nn as nn
+import numpy as np
 from Methods.utils.meta_methods import SeverMethod
 
 class ShanFLSever(SeverMethod):
@@ -5,11 +9,34 @@ class ShanFLSever(SeverMethod):
 
     def __init__(self, global_model, cfg):
         super().__init__(global_model, cfg)
+        self.parti_num = cfg.DATASET.parti_num # Get participant number from global config
+        self.trust_scores = {i: cfg.ShanFL.initial_trust_score for i in range(self.parti_num)}
+        self.previous_client_model_diffs = {i: None for i in range(self.parti_num)}
+        self.consistency_threshold = cfg.ShanFL.consistency_threshold
+        self.trust_increase_factor = cfg.ShanFL.trust_increase_factor
+        self.trust_decrease_factor = cfg.ShanFL.trust_decrease_factor
+        self.min_trust_score = cfg.ShanFL.min_trust_score
+        self.max_trust_score = cfg.ShanFL.max_trust_score
+        self.global_model_at_round_start = None # This will be updated by the orchestrator (e.g., FederatedMethod.ini or before sever_update call)
+        
+        # These will be passed into the sever_update method directly
+        self.nets_list = None
+        self.online_clients_list = None
+        self.aggregation_weight_list = None
+        self.epoch_index = 0 # Or passed via kwargs to sever_update
 
     def sever_update(self, **kwargs):
-        if not hasattr(self, 'online_clients_list') or not self.online_clients_list:
-            print("Warning: online_clients_list is not set or empty in sever_update. Skipping trust score update and using equal weighting.")
-            self.aggregation_weight_list = [1.0 / self.parti_num] * self.parti_num if self.parti_num > 0 else []
+        self.online_clients_list = kwargs.get('online_clients_list', self.online_clients_list)
+        self.nets_list = kwargs.get('nets_list', self.nets_list)
+        self.epoch_index = kwargs.get('epoch_index', self.epoch_index) # Assume epoch_index is updated externally or incremented
+        
+        if self.global_model_at_round_start is None:
+            # Fallback or error if not set, or initialize to current global_net state
+            self.global_model_at_round_start = copy.deepcopy(self.global_net.state_dict())
+
+        if not self.online_clients_list: # Simplified check
+            print("Warning: online_clients_list is empty in sever_update. Skipping trust score update and using equal weighting.")
+            # self.aggregation_weight_list = [1.0 / self.parti_num] * self.parti_num if self.parti_num > 0 else [] # This line already uses self.parti_num
             self._perform_simple_average_aggregation()
             # Reset global model at round start for next epoch
             self.global_model_at_round_start = copy.deepcopy(self.global_net.state_dict())
@@ -86,3 +113,29 @@ class ShanFLSever(SeverMethod):
 
         # Reset global model at round start for next epoch
         self.global_model_at_round_start = copy.deepcopy(self.global_net.state_dict())
+    
+    def _flatten_parameters(self, params_dict):
+        """Flattens a dictionary of model parameters into a single tensor."""
+        tensors = [v.flatten() for v in params_dict.values() if isinstance(v, torch.Tensor)]
+        if not tensors:
+            return torch.tensor([])
+        return torch.cat(tensors)
+
+    def _perform_simple_average_aggregation(self):
+        """Fallback aggregation method if trust scores are problematic or no online clients."""
+        if not self.online_clients_list:
+            return
+
+        global_state = self.global_net.state_dict()
+        for k in global_state:
+            global_state[k] = torch.zeros_like(global_state[k])
+
+        num_online_clients = len(self.online_clients_list)
+        if num_online_clients == 0: return # This will cause an error if used as num_online_clients / 0.0
+
+        for client_id in self.online_clients_list:
+            client_net_para = self.nets_list[client_id].state_dict()
+            for k in global_state:
+                global_state[k] += client_net_para[k] / num_online_clients
+
+        self.global_net.load_state_dict(global_state)
