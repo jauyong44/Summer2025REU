@@ -9,10 +9,6 @@ class BaseLocal(LocalMethod):
 
     def __init__(self, args, cfg):
         super(BaseLocal, self).__init__(args, cfg)
-        self.local_optimizer = get_optimizer(self.net, self.cfg.OPTIMIZER.type,
-                                             self.cfg.OPTIMIZER.local_train_lr,
-                                             self.cfg.OPTIMIZER.momentum, self.cfg.OPTIMIZER.weight_decay)
-        self.criterion = nn.CrossEntropyLoss()
 
     def loc_update(self, **kwargs):
         online_clients_list = kwargs['online_clients_list']
