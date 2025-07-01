@@ -408,7 +408,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
                     losses.append(loss)
             fed_method.local_model.loc_update(
                 priloader_list=private_dataset.train_loaders,
-                loss=loss,
+                losses=losses,
                 online_clients_list=fed_method.online_clients_list, # Assuming this is available and correct
                 nets_list=fed_method.nets_list, # Assuming fed_method.nets_list is the full list of client nets
                 epoch_index=fed_method.epoch_index
