@@ -28,6 +28,7 @@ class FederatedMethod(nn.Module):
 
         self.global_net = None
         self.device = get_device(device_id=self.args.device_id)
+        self.online_clients_list = None # Initialize to None or an empty list []
 
         from Aggregations import get_fed_aggregation
         from Sever import get_sever_method
