@@ -413,7 +413,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
             else:
                 fed_method.online_clients_list = list(range(cfg.DATASET.parti_num)) # All clients
 
-            log_msg(f"Warning: fed_method.online_clients_list was not explicitly set by the method. Selected {len(fed_method.online_clients_list)} clients for epoch {epoch_index}.", "WARNING")
+            log_msg(f"Warning: fed_method.online_clients_list was not explicitly set by the method. Selected {len(fed_method.online_clients_list)} clients for epoch {epoch_index}.")
             
         # Locally updates
         if args.attack_type == "Poisoning_Attack":
