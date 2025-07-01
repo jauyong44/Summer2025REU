@@ -450,7 +450,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
         # Calculate and print local accuracies after local updates
         current_epoch_local_accuracies = []
                                              
-        for client_idx_in_online_list in selected_client_indices:
+        for client_idx_in_online_list in fed_method.online_clients_list:
             # 'client_idx_in_online_list' is the actual global index of the client
             local_net = fed_method.nets_list[client_idx_in_online_list]
 
