@@ -2,7 +2,7 @@ import importlib
 import os
 import inspect
 
-def get_sever_method(args, cfg):
+def get_sever_method(args, cfg, global_net=None):
     method_name = cfg[args.method].global_method # Assuming 'global_method' is the key
     
     # Dynamically import *only the specific module requested*
@@ -30,4 +30,4 @@ def get_sever_method(args, cfg):
     if class_obj is None:
         raise RuntimeError(f"Could not find a valid SeverMethod class in module 'Sever.{method_name}'")
 
-    return class_obj(args, cfg) # Instantiate and return
+    return class_obj(global_net, cfg) # Instantiate and return
