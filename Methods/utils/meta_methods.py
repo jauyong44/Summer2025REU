@@ -21,21 +21,26 @@ class FederatedMethod(nn.Module):
 
         self.args = args
         self.cfg = cfg
+        self.device = get_device(device_id=self.args.device_id)
+
+        # Initialize global_net here FIRST, before any sever_model creation
+        if args.structure == 'homogeneity':
+            self.global_net = copy.deepcopy(self.nets_list[0]).to(self.device)
+        else:
+            self.global_net = None # Or handle heterogeneity differently
 
         self.random_state = np.random.RandomState()
         self.online_num = np.ceil(self.cfg.DATASET.parti_num * self.cfg.DATASET.online_ratio).item()
         self.online_num = int(self.online_num)
 
         self.global_net = None
-        self.device = get_device(device_id=self.args.device_id)
         self.online_clients_list = None # Initialize to None or an empty list []
 
-        from Aggregations import get_fed_aggregation
         from Sever import get_sever_method
-        from Local import get_local_method
+        self.sever_model = get_sever_method(args=args, cfg=cfg, global_net=self.global_net) # Pass global_net here!
 
-        self.local_model = get_local_method(args, cfg)
-        self.sever_model = get_sever_method(args, cfg)
+        from Local import get_local_method
+        self.local_model = get_local_method(args=args, cfg=cfg)
 
         if args.structure == 'homogeneity':
             self.fed_aggregation = get_fed_aggregation(args)
