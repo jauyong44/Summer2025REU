@@ -467,7 +467,12 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
         local_accuracies_per_epoch.append(current_epoch_local_accuracies)
 
         # Server
-        fed_method.sever_model.sever_update(private_dataset.train_loaders)
+        fed_method.sever_model.sever_update(
+            train_loaders=private_dataset.train_loaders, # Pass as keyword argument
+            online_clients_list=fed_method.online_clients_list,
+            nets_list=fed_method.nets_list,
+            epoch_index=fed_method.epoch_index
+        )
         print("test1")
         # If that arguments' task is 'OOD'
         if args.task == 'OOD':
