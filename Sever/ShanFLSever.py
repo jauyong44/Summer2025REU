@@ -7,8 +7,12 @@ from Methods.utils.meta_methods import SeverMethod
 class ShanFLSever(SeverMethod):
     NAME = 'ShanFLSever'
 
-    def __init__(self, global_model, cfg):
-        super().__init__(global_model, cfg)
+    def __init__(self, **kwargs):
+        global_model = kwargs.get('global_model')
+        cfg = kwargs.get('cfg')
+        if global_model is None or cfg is None:
+            raise ValueError("ShanFLSever.__init__ requires 'global_model' and 'cfg' in kwargs.")
+        super().__init__(global_model, cfg) # Pass them to SeverMethod.__init__
         self.parti_num = cfg.DATASET.parti_num # Get participant number from global config
         self.trust_scores = {i: cfg.ShanFL.initial_trust_score for i in range(self.parti_num)}
         self.previous_client_model_diffs = {i: None for i in range(self.parti_num)}
