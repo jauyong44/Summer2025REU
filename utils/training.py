@@ -468,10 +468,11 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
 
         # Server
         fed_method.sever_model.sever_update(
-            train_loaders=private_dataset.train_loaders, # Pass as keyword argument
+            train_loaders=private_dataset.train_loaders,
             online_clients_list=fed_method.online_clients_list,
             nets_list=fed_method.nets_list,
-            epoch_index=fed_method.epoch_index
+            epoch_index=fed_method.epoch_index,
+            global_net=fed_method.global_net # ADD THIS LINE
         )
         print("test1")
         # If that arguments' task is 'OOD'
