@@ -7,8 +7,8 @@ from Sever.utils.sever_methods import SeverMethod
 class TRUFLSever(SeverMethod):
     NAME = 'TRUFLSever'
 
-    def __init__(self, global_model, cfg): # Expects global_model and cfg from get_sever_method
-        super().__init__(global_model, cfg) # Initialize base SeverMethod attributes
+    def __init__(self, args, cfg):
+        super(TRUFLSever, self).__init__(args, cfg)
 
         # Initialize TRUFL-specific server-side state from config
         # Parameters defined under CFG.TRUFL in cfg.py
