@@ -2,7 +2,7 @@ import copy
 import torch
 import torch.nn as nn
 import numpy as np
-from Methods.utils.meta_methods import SeverMethod
+from Sever.utils.sever_methods import SeverMethod
 
 class TRUFLSever(SeverMethod):
     NAME = 'TRUFLSever'
