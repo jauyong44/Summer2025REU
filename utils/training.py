@@ -395,6 +395,15 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
 
         # Client
         fed_method.test_loader = private_dataset.test_loader
+        # This block ensures fed_method.online_clients_list is set before loc_update.
+        if not hasattr(fed_method, 'online_clients_list') or fed_method.online_clients_list is None:
+            # Default selection if the method doesn't specify online clients.
+            online_count = fed_method.online_num if hasattr(fed_method, 'online_num') else cfg.DATASET.parti_num
+            if online_count < cfg.DATASET.parti_num:
+                fed_method.online_clients_list = random.sample(range(cfg.DATASET.parti_num), online_count)
+            else:
+                fed_method.online_clients_list = list(range(cfg.DATASET.parti_num))
+            log_msg(f"Warning: fed_method.online_clients_list was not explicitly set by the method. Selected {len(fed_method.online_clients_list)} clients for epoch {epoch_index}.")
         # Locally updates
         if args.attack_type == "Poisoning_Attack":
             for client_index in range(cfg.DATASET.parti_num):
@@ -406,11 +415,20 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
                 else:
                     loss = -1
                     losses.append(loss)
-            fed_method.local_update(private_dataset.train_loaders, losses)
-                # row_into_parameters(loss, np.array(private_dataset.train_loaders[0]))
-                # train_loader.append(data_utils.DataLoader(loss, batch_size=len(private_dataset.train_loaders[0]), shuffle=True))
+            fed_method.local_model.loc_update(
+                priloader_list=private_dataset.train_loaders,
+                losses=losses,
+                online_clients_list=fed_method.online_clients_list,
+                nets_list=fed_method.nets_list,
+                epoch_index=fed_method.epoch_index
+            )
         else:
-            fed_method.local_update(private_dataset.train_loaders)
+            fed_method.local_model.loc_update(
+                priloader_list=private_dataset.train_loaders,
+                online_clients_list=fed_method.online_clients_list,
+                nets_list=fed_method.nets_list,
+                epoch_index=fed_method.epoch_index
+            )
 
         fed_method.nets_list_before_agg = copy.deepcopy(fed_method.nets_list)
 
@@ -420,13 +438,6 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
 
         # Calculate and print local accuracies after local updates
         current_epoch_local_accuracies = []
-        # Iterate through clients picked for current epoch
-        if hasattr(fed_method, 'online_clients_list') and fed_method.online_clients_list is not None:
-            selected_client_indices = fed_method.online_clients_list
-        else:
-            # else assume that all clients participated
-            selected_clients_indices = range(cfg.DATASET.parti_num)
-            print(log_msg("Warning: fed_method.online_clients_list not found. Assuming all clients participated.", "WARNING"))
                                              
         for client_idx_in_online_list in selected_client_indices:
             # 'client_idx_in_online_list' is the actual global index of the client
@@ -445,7 +456,13 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
         local_accuracies_per_epoch.append(current_epoch_local_accuracies)
 
         # Server
-        fed_method.sever_update(private_dataset.train_loaders)
+        fed_method.sever_model.sever_update(
+            train_loaders=private_dataset.train_loaders, # Pass as keyword argument
+            online_clients_list=fed_method.online_clients_list,
+            nets_list=fed_method.nets_list,
+            epoch_index=fed_method.epoch_index,
+            # global_net is already self.global_net in sever_model from its __init__
+        )
         print("test1")
         # If that arguments' task is 'OOD'
         if args.task == 'OOD':
