@@ -35,6 +35,7 @@ class TRUFLSever(SeverMethod):
         self.online_clients_list = kwargs.get('online_clients_list', self.online_clients_list)
         self.nets_list = kwargs.get('nets_list', self.nets_list)
         self.epoch_index = kwargs.get('epoch_index', self.epoch_index)
+        self.global_net = kwargs.get('global_net', self.global_net)
         # train_loaders might be passed but not directly used in aggregation logic here
         # train_loaders = kwargs.get('train_loaders') 
         
