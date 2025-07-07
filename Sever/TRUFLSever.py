@@ -27,6 +27,8 @@ class TRUFLSever(SeverMethod):
         self.aggregation_weight_list = None
         self.epoch_index = 0 # Will be updated by the orchestrator (training.py)
 
+        self.global_net = None
+
         # global_model_at_round_start is crucial for diff calculation
         self.global_model_at_round_start = None 
 
