@@ -445,7 +445,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
         local_accuracies_per_epoch.append(current_epoch_local_accuracies)
 
         # Server
-        fed_method.sever_update(private_dataset.train_loaders)
+        fed_method.sever_update(global_net=fed_method.global_net, train_loaders=private_dataset.train_loaders)
         print("test1")
         # If that arguments' task is 'OOD'
         if args.task == 'OOD':
