@@ -1,5 +1,6 @@
 from yacs.config import CfgNode as CN
 from utils.utils import log_msg
+import copy
 
 
 # This function simplified the CfgNode and sets each part of the dump_cfg to simplify the passed in cfg
@@ -19,12 +20,16 @@ def simplify_cfg(args, cfg):
     dump_cfg[args.task] = cfg[args.task]
 
     # simplify Sever cfg
+    dump_cfg.Sever = CN() # Line A: Creates an empty Sever CfgNode
+    for key, value in cfg.Sever.items():
+        dump_cfg.Sever[key] = copy.deepcopy(value)
     if cfg[args.method].global_method in list(cfg['Sever'].keys()):
-        dump_cfg['Sever'] = CN()
-        dump_cfg['Sever'][cfg[args.method].global_method] = CN()
         dump_cfg['Sever'][cfg[args.method].global_method] = cfg['Sever'][cfg[args.method].global_method]
+        # dump_cfg['Sever'] = CN()
+        # dump_cfg['Sever'][cfg[args.method].global_method] = CN()
+        # dump_cfg['Sever'][cfg[args.method].global_method] = cfg['Sever'][cfg[args.method].global_method]
 
-    # simplify Local cfg
+    # simplify Local cfgIf 
     if cfg[args.method].local_method in list(cfg['Local'].keys()):
         dump_cfg['Local'] = CN()
         dump_cfg['Local'][cfg[args.method].local_method] = CN()
@@ -139,6 +144,7 @@ CFG.MODEL.CNN.init_weights = False
 
 '''Sever'''
 CFG.Sever = CN()
+CFG.Sever.get_gradients = False
 
 CFG.Sever.FedOptSever = CN()
 CFG.Sever.FedOptSever.global_lr = 0.5

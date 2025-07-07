@@ -384,6 +384,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
     # Lists to store local accuracies and global loss
     local_accuracies_per_epoch = []
     global_losses_per_epoch = []
+    all_client_gradients_per_epoch = []
 
     # Creates a local variable for organization of the communication_epoch
     communication_epoch = cfg.DATASET.communication_epoch
@@ -413,6 +414,30 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
             fed_method.local_update(private_dataset.train_loaders)
 
         fed_method.nets_list_before_agg = copy.deepcopy(fed_method.nets_list)
+
+        current_epoch_client_gradients = []
+        global_net_params_before_local_update = fed_method.global_net.state_dict()
+        if(cfg.Sever.get_gradients):
+            print(log_msg("Getting Gradients for this epoch"))
+            with torch.no_grad()
+                for client_idx in selected_client_indices:
+                    client_net = fed_method.nets_list[client_idx]
+                    client_grads_for_this_client = []
+                    for name, global_param in global_net_params_before_local_update.items():
+                        local_param = client_net.state_dict()[name]
+                        learning_rate_for_grad_calc = getattr(fed_method.args, 'local_train_lr', 0.001)
+                        if learning_rate_for_grad_calc == 0:
+                            inferred_grad = torch.zeros_like(global_param)
+                        else:
+                            inferred_grad = (global_param.detach() - local_param.detach()) / learning_rate_for_grad_calc
+
+                        client_grads_for_this_client.append(inferred_grad.view(-1))
+                    current_epoch_client_gradients.append(torch.cat(client_grads_for_this_client, dim=0).cpu().numpy())  
+                all_client_gradients_per_epoch.append(current_epoch_client_gradients)
+        
+                
+
+            
 
         # If the arguments' attack_type is 'byzantine', calls a method that creates the attack net parameters
         if args.attack_type == 'byzantine':
