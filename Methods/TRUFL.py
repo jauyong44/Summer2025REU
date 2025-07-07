@@ -25,6 +25,18 @@ class TRUFL(FederatedMethod):
     self.local_model.loc_update(online_clients_list=self.online_clients_list, nets_list=self.nets_list, global_net=self.global_net, 
                                 priloader_list=priloader_list, epoch_index=self.epoch_index)
 
-  def sever_update(self, priloader_list):
-    self.sever_model.sever_update(nets_list=self.nets_list, online_clients_list=self.online_clients_list,
-                                  epoch_index=self.epoch_index)
+  def sever_update(self, **kwargs):
+        # Retrieve necessary data from kwargs
+        self.online_clients_list = kwargs.get('online_clients_list', self.online_clients_list)
+        self.nets_list = kwargs.get('nets_list', self.nets_list)
+        self.epoch_index = kwargs.get('epoch_index', self.epoch_index)
+
+        # Retrieve global_net from kwargs if it's passed
+        global_net = kwargs.get('global_net') # This will be the global_net passed from training.py
+
+        # Pass all relevant arguments (including global_net) to the sever_model's sever_update
+        self.sever_model.sever_update(nets_list=self.nets_list,
+                                      online_clients_list=self.online_clients_list,
+                                      epoch_index=self.epoch_index,
+                                      global_net=global_net, # Pass global_net along
+                                      train_loaders=kwargs.get('train_loaders'))
