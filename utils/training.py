@@ -506,7 +506,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
             print(log_msg(f"Global Loss: {global_loss:.4f}", "TEST"))
 
         # If the 'contribution_match_degree_list' is in locals and the federated method aggregation_weight_list is not none. . .
-            if 'contribution_match_degree_list' in locals() and fed_method.aggregation_weight_list is not None:
+            if 'contribution_match_degree_list' in locals() and fed_method.sever_model.aggregation_weight_list is not None:
                 print("eval contribution_match_degree_list")
                 # Checks to see if the epoch index is divisible by 10, OR if the epoch index is one less than the communication_epoch
                 if epoch_index % 10 == 0 or epoch_index == communication_epoch - 1:
