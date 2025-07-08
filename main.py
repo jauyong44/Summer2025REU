@@ -145,6 +145,7 @@ def main(args=None):
     if os.path.exists(cfg_method_path):
         cfg.merge_from_file(cfg_method_path)
 
+    filtered_opts = [opt for opt in args.opts if opt != '--']
     cfg.merge_from_list(args.opts)
 
     # Creates the particial CfgNode using the arguments as settings
