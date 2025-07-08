@@ -146,7 +146,7 @@ def main(args=None):
         cfg.merge_from_file(cfg_method_path)
 
     filtered_opts = [opt for opt in args.opts if opt != '--']
-    cfg.merge_from_list(args.opts)
+    cfg.merge_from_list(filtered_opts) # Make sure you pass filtered_opts here
 
     # Creates the particial CfgNode using the arguments as settings
     particial_cfg = simplify_cfg(args, cfg)
