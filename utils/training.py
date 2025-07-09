@@ -603,4 +603,4 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
                 csv_writer.write_acc(local_acc_data_for_csv, name='local_accuracies', mode='ALL')
 
         if global_losses_per_epoch:
-            csv_writer.write_acc({'global_loss': global_losses_per_epoch}, name='global_loss', mode='MEAN')
+            csv_writer.write_acc(global_losses_per_epoch, name='global_loss', mode='MEAN')
