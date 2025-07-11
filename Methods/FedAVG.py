@@ -1,5 +1,4 @@
 from Methods.utils.meta_methods import FederatedMethod
-from Local.utils.local_methods import BaseLocal
 
 class FedAVG(FederatedMethod):
     NAME = 'FedAVG'
@@ -7,7 +6,6 @@ class FedAVG(FederatedMethod):
 
     def __init__(self, nets_list, client_domain_list, args, cfg):
         super(FedAVG, self).__init__(nets_list, client_domain_list, args, cfg)
-        self.local_model = BaseLocal(args=args, cfg=cfg)
 
     def ini(self):
         super().ini()
