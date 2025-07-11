@@ -1,5 +1,4 @@
 from Methods.utils.meta_methods import FederatedMethod
-from Sever.KrumServer import KrumServer
 
 class Krum(FederatedMethod):
     NAME = 'Krum'
