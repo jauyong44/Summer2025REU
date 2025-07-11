@@ -1,5 +1,5 @@
 from Methods.utils.meta_methods import FederatedMethod
-from Local.utils import BaseLocal # Or wherever BaseLocal is located
+from Local.utils.local_methods import BaseLocal
 
 class FedAVG(FederatedMethod):
     NAME = 'FedAVG'
