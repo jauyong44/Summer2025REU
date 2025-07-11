@@ -30,9 +30,17 @@ class FedAVG(FederatedMethod):
 
             self.local_model.loc_update(**kwargs_for_loc_update)
 
-    def sever_update(self, priloader_list):
-        self.aggregation_weight_list = self.sever_model.sever_update(fed_aggregation=self.fed_aggregation,
-                                                                     online_clients_list=self.online_clients_list,
-                                                                     priloader_list=priloader_list,
-                                                                     client_domain_list=self.client_domain_list,
-                                                                     global_net=self.global_net, nets_list=self.nets_list)
+    def sever_update(self, **kwargs):
+        global_net = kwargs.get('global_net', self.global_net) # Get global_net, with fallback
+        priloader_list = kwargs.get('train_loaders') # training.py passes it as 'train_loaders'
+        online_clients_list = kwargs.get('online_clients_list', self.online_clients_list)
+        nets_list = kwargs.get('nets_list', self.nets_list) 
+
+        self.aggregation_weight_list = self.sever_model.sever_update(
+            fed_aggregation=self.fed_aggregation,
+            online_clients_list=online_clients_list,
+            priloader_list=priloader_list,
+            client_domain_list=self.client_domain_list,
+            global_net=global_net,
+            nets_list=nets_list
+        )
