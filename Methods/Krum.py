@@ -6,7 +6,6 @@ class Krum(FederatedMethod):
 
     def __init__(self, nets_list, client_domain_list, args, cfg):
         super(Krum, self).__init__(nets_list, client_domain_list, args, cfg)
-        self.sever_model = KrumServer(args=args, cfg=cfg)
 
     def ini(self):
         super().ini()
