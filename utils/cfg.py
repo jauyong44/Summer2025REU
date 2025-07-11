@@ -479,3 +479,9 @@ CFG.TRUFL.max_trust_score = 1.0
 CFG.Krum = CN()
 CFG.Krum.local_method = 'BaseLocal'
 CFG.Krum.global_method = 'KrumSever'
+
+# TrimmedMean
+CFG.TrimmedMean = CN()
+CFG.TrimmedMean.local_method = 'BaseLocal'
+CFG.TrimmedMean.global_method = 'TrimmedMeanSever'
+CFG.TrimmedMean.trim_ratio = 0.1 # common default
