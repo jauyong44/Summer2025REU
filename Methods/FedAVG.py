@@ -11,7 +11,7 @@ class FedAVG(FederatedMethod):
     def ini(self):
         super().ini()
 
-    def local_update(self, priloader_list, losses = []):
+    def local_update(self, priloader_list, losses=none):
         total_clients = list(range(self.cfg.DATASET.parti_num))
         self.online_clients_list = self.random_state.choice(total_clients, self.online_num, replace=False).tolist()
 
