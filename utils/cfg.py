@@ -474,3 +474,8 @@ CFG.TRUFL.trust_increase_factor = 1.1
 CFG.TRUFL.trust_decrease_factor = 0.9
 CFG.TRUFL.min_trust_score = 0.0
 CFG.TRUFL.max_trust_score = 1.0
+
+# Krum
+CFG.Krum = CN()
+CFG.Krum.local_method = 'BaseLocal'
+CFG.Krum.global_method = 'KrumSever'
