@@ -468,7 +468,7 @@ CFG.TRUFL = CN()
 CFG.TRUFL.local_method = 'BaseLocal'
 CFG.TRUFL.global_method = 'TRUFLSever'
 
-CFG.TRUFL.initial_trust_score = 1.0
+CFG.TRUFL.initial_trust_score = 0.5
 CFG.TRUFL.consistency_threshold = 0.95
 CFG.TRUFL.trust_increase_factor = 1.1
 CFG.TRUFL.trust_decrease_factor = 0.9
