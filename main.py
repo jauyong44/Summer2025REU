@@ -50,7 +50,7 @@ def parse_args():
     parser.add_argument('--dataset', type=str, default='Digits',
                         help='Which scenario to perform experiments on.')
     '''
-    Attack: byzantine backdoor Poisoning_Attack None
+    Attack: byzantine backdoor Poisoning_Attack gradient_inversion None
     '''
     # Adds flag for the attack type, with the default being none
     parser.add_argument('--attack_type', type=str, default='None')
@@ -151,7 +151,7 @@ def main(args=None):
     particial_cfg = simplify_cfg(args, cfg)
 
     # If there is an attack being carried out, set the bad_client_rate and noise_data_rate
-    if args.attack_type != 'None':
+    if args.attack_type != 'None' and args.attack_type != 'gradient_inversion':
         particial_cfg.attack.bad_client_rate = args.bad_client_rate
         particial_cfg.attack.noise_data_rate = args.noise_data_rate
         

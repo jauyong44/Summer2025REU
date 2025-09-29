@@ -3,6 +3,7 @@ import copy
 import torch.utils.data as data_utils
 from Attack.byzantine.utils import attack_net_para
 from Attack.Poisoning_Attack.utils import inverse_loss
+from Attack.gradient_inversion.utils import get_parameter_difference
 from Methods.utils.meta_methods import FederatedMethod
 from utils.logger import CsvWriter
 import torch
@@ -366,7 +367,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
     # Else, if the arguments' task is 'label_skew', it creates the specific settings for that task
     elif args.task == 'label_skew':
         mean_in_domain_acc_list = []
-        if args.attack_type == 'None':
+        if args.attack_type == 'None' or args.attack_type == 'gradient_inversion':
             contribution_match_degree_list = []
         # Fills the rest of the net_cls_counts to 0's if they are blank
         fed_method.net_cls_counts = fill_blank(private_dataset.net_cls_counts,cfg.DATASET.n_classes)
@@ -375,7 +376,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
         in_domain_accs_dict = {}  # Query-Client Accuracy \bm{\mathcal{A}}}^{u}
         mean_in_domain_acc_list = []  # Cross-Client Accuracy A^U \bm{\mathcal{A}}}^{\mathcal{U}
         performance_variane_list = []
-        if args.attack_type == 'None':
+        if args.attack_type == 'None' or args.attack_type == 'gradient_inversion':
             contribution_match_degree_list = []
     # If the arguments' attack_type is backdoor, it creates a list for the attack_success_rate
     if args.attack_type == 'backdoor' or (args.attack_type == 'Poisoning_Attack' and args.poisoning_evils == 'inverted_gradient' and args.backdoor_evils == 'atropos'):
@@ -443,7 +444,8 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
             current_epoch_local_accuracies.append(local_acc)
             print(f"Client {client_idx_in_online_list} Local Accuracy: {local_acc:.2f}%")
         local_accuracies_per_epoch.append(current_epoch_local_accuracies)
-
+        if args.attack_type == 'gradient_inversion':
+            print(get_parameter_difference(fed_method, fed_method.global_net, fed_method.online_clients_list))
         # Server
         fed_method.sever_update(private_dataset.train_loaders)
         print("test1")
@@ -572,7 +574,7 @@ def train(fed_method, private_dataset, args, cfg, client_domain_list, client_typ
             # Write the mean_in_domain_acc_list to the csv file
             csv_writer.write_acc(mean_in_domain_acc_list, name='in_domain', mode='MEAN')
             # If the arguments' attack type is none, writes the contribution_match_degree_list to the csv file
-            if args.attack_type == 'None':
+            if args.attack_type == 'None' or args.attack_type == 'gradient_inversion':
                 csv_writer.write_acc(contribution_match_degree_list, name='contribution_fairness', mode='MEAN')
 
         # Else, if the arguments' task is 'domain_skew'

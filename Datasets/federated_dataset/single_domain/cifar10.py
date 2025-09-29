@@ -111,6 +111,20 @@ class FedLeaCIFAR10(SingleDomainDataset):
 
 
     def get_data_loaders(self):
+        print("Calculating mean and std for FLCIFAR10 dataset...")
+        temp_transform = transforms.ToTensor()
+        trainset_for_stats = CIFAR10(root='/bsuhome/jonathanauyong/REU/Summer2025REU/data/label_skew', train=True, download=True, transform=temp_transform)
+        trainloader_for_stats = torch.utils.data.DataLoader(trainset_for_stats, batch_size=len(trainset_for_stats), shuffle=False)
+        images_for_stats, _ = next(iter(trainloader_for_stats)) # Shape: [N, C, H, W]
+        mean = images_for_stats.mean(dim=[0, 2, 3])
+        std = images_for_stats.std(dim=[0, 2, 3])
+
+        print(f"Calculated Mean for FLCIFAR10: {mean}")
+        print(f"Calculated Std Dev for FLCIFAR10: {std}")
+
+        self.calculated_mean = mean
+        self.calculated_std = std
+
         pri_aug = self.cfg.DATASET.aug
         if pri_aug == 'weak':
             train_transform = self.weak_transform
